@@ -18,7 +18,9 @@ The goals/steps of this project are the following:
 
 The C++ project solution is a model predictive controller that controls a vehicle within the [Udacity simulator](https://github.com/udacity/self-driving-car-sim/releases).    The starting code provided by Udacity can be found [here](https://github.com/udacity/CarND-MPC-Project).    
 
+A view of the controller driving the virtual vehicle is below.  A video of a single lap around the Udacity track can be viewed [here](https://www.youtube.com/watch?v=lpdiwEUHukM).
 
+![MPC Simulator](images/mpc-simulator.gif)
 
 ### Model Predictive Control
 
@@ -34,27 +36,27 @@ A screenshot of the simulated vehicle controlled by the MPC is below.   The yell
 
 The [Udacity simulator](https://github.com/udacity/self-driving-car-sim/releases) provides the following data to the controller via WebSocket:
 
-| Value            | Data Type      | Description                                                  |
-| ---------------- | -------------- | ------------------------------------------------------------ |
-| `ptsx`           | *Array<float>* | The global x positions of the waypoints.                     |
-| `ptsy`           | *Array<float>* | The global y positions of the waypoints.                     |
-| `psi`            | *float*        | The orientation of the vehicle in **radians**.               |
-| `x`              | *float*        | The global x position of the vehicle.                        |
-| `y`              | *float*        | The global y position of the vehicle.                        |
-| `steering_angle` | *float*        | The current steering angle in **radians**.                   |
-| `throttle`       | *float*        | The current throttle value ![](images/1-1.gif). |
-| `speed`          | *float*        | The current velocity in **mph**.                             |
+| Parameter        | Data Type            | Description                                     |
+| ---------------- | -------------------- | ----------------------------------------------- |
+| `ptsx`           | *Array&lt;float&gt;* | The global x positions of the waypoints.        |
+| `ptsy`           | *Array&lt;float&gt;* | The global y positions of the waypoints.        |
+| `psi`            | *float*              | The orientation of the vehicle in **radians**.  |
+| `x`              | *float*              | The global x position of the vehicle.           |
+| `y`              | *float*              | The global y position of the vehicle.           |
+| `steering_angle` | *float*              | The current steering angle in **radians**.      |
+| `throttle`       | *float*              | The current throttle value ![](images/1-1.gif). |
+| `speed`          | *float*              | The current velocity in **mph**.                |
 
 The MPC solution receives the elements described above from the simulator ([main.cpp](src/main.cpp) lines 114-123) and then calculates and returns the following values.
 
-| Value            | Data Type      | Description                                                  |
-| ---------------- | -------------- | ------------------------------------------------------------ |
-| `steering_angle` | *float*        | The calculated steering angle in **radians**.                |
-| `throttle`       | *float*        | The calculated throttle value ![](images/1-1.gif). |
-| `mpc_x`          | *Array<float>* | The x positions of the optimal trajectory calculated by the MPC controller. These values are displayed within the simulator as a **green** line. |
-| `mpc_y`          | *Array<float>* | The y positions of the optimal trajectory calculated by the MPC controller. These values are displayed within the simulator as a **green** line. |
-| `next_x`         | *Array<float>* | The x positions of the reference trajectory waypoints.  These values are displayed within the simulator as a **yellow** line. |
-| `next_y`         | *Array<float>* | The y positions of the reference trajectory waypoints. These values are displayed within the simulator as a **yellow** line. |
+| Parameter        | Data Type            | Description                                                  |
+| ---------------- | -------------------- | ------------------------------------------------------------ |
+| `steering_angle` | *float*              | The calculated steering angle in **radians**.                |
+| `throttle`       | *float*              | The calculated throttle value ![](images/1-1.gif).           |
+| `mpc_x`          | *Array&lt;float&gt;* | The x positions of the optimal trajectory calculated by the MPC controller. These values are displayed within the simulator as a **green** line. |
+| `mpc_y`          | *Array&lt;float&gt;* | The y positions of the optimal trajectory calculated by the MPC controller. These values are displayed within the simulator as a **green** line. |
+| `next_x`         | *Array&lt;float&gt;* | The x positions of the reference trajectory waypoints.  These values are displayed within the simulator as a **yellow** line. |
+| `next_y`         | *Array&lt;float&gt;* | The y positions of the reference trajectory waypoints. These values are displayed within the simulator as a **yellow** line. |
 
 
 
@@ -72,33 +74,33 @@ The terms in the image above are described below.
 
 | Term                 | Description                                                  |
 | -------------------- | ------------------------------------------------------------ |
-| ![](images/m-T.gif)  | The prediction horizon. The duration over which future predictions are made (in seconds).  The value should only be a few seconds.  The vehicle's state changes significantly beyond that horizon making predictions unreliable. |
-| ![](images/m-N.gif)  | The number of timesteps in the prediction horizon.   More steps can increase the optimizer's prediction accuracy; however the tradeoff is computational cost.  ![](images/m-N.gif) is set in [MPC.cpp](src/MPC.cpp) on line 9. |
-| ![](images/m-dt.gif) | The amount of time that elapses between actuations (in seconds) Smaller intervals increase the number of actuations and can increase prediction accuracy; however the tradeoff is computational cost. ![](images/m-dt.gif) is set in [MPC.cpp](src/MPC.cpp) on line 10. |
+| ![T](images/m-T.gif)  | The prediction horizon. The duration over which future predictions are made (in seconds).  The value should only be a few seconds.  The vehicle's state changes significantly beyond that horizon making predictions unreliable. |
+| ![N](images/m-N.gif)  | The number of timesteps in the prediction horizon.   More steps can increase the optimizer's prediction accuracy; however the tradeoff is computational cost.  ![](images/m-N.gif) is set in [MPC.cpp](src/MPC.cpp) on line 9. |
+| ![dt](images/m-dt.gif) | The amount of time that elapses between actuations (in seconds) Smaller intervals increase the number of actuations and can increase prediction accuracy; however the tradeoff is computational cost. ![](images/m-dt.gif) is set in [MPC.cpp](src/MPC.cpp) on line 10. |
 
 ##### *PREDICTION MODEL TERMS*
 
 | Term                     | Description                                                  |
 | ------------------------ | ------------------------------------------------------------ |
-| ![](images/m-xt1.gif)    | The predicted x position of the vehicle at time ![](images/t-1.gif).  ([MPC.cpp](src/MPC.cpp) line 150) |
-| ![](images/m-yt1.gif)    | The predicted y position of the vehicle at time ![](images/t-1.gif). ([MPC.cpp](src/MPC.cpp) line 151) |
-| ![](images/m-psit1.gif)  | The predicted vehicle orientation at time ![](images/t-1.gif). ([MPC.cpp](src/MPC.cpp) line 152) |
-| ![](images/m-vt1.gif)    | The predicted vehicle velocity at time ![](images/t-1.gif). ([MPC.cpp](src/MPC.cpp) line 153) |
-| ![](images/m-ctet1.gif)  | The predicted cross track error at time ![](images/t-1.gif). ([MPC.cpp](src/MPC.cpp) line 154) |
-| ![](images/m-espit1.gif) | The predicted orientation error at time ![](images/t-1.gif). ([MPC.cpp](src/MPC.cpp) line 155) |
+| ![x(t+1)](images/m-xt1.gif)    | The predicted x position of the vehicle at time ![](images/t-1.gif).  ([MPC.cpp](src/MPC.cpp) line 146) |
+| ![y(t+1)](images/m-yt1.gif)    | The predicted y position of the vehicle at time ![](images/t-1.gif). ([MPC.cpp](src/MPC.cpp) line 147) |
+| ![ψ(t+1)](images/m-psit1.gif)  | The predicted vehicle orientation at time ![](images/t-1.gif). ([MPC.cpp](src/MPC.cpp) line 148) |
+| ![v(t+1)](images/m-vt1.gif)    | The predicted vehicle velocity at time ![](images/t-1.gif). ([MPC.cpp](src/MPC.cpp) line 149) |
+| ![cte(t+1)](images/m-ctet1.gif)  | The predicted cross track error at time ![](images/t-1.gif). ([MPC.cpp](src/MPC.cpp) line 150) |
+| ![eψ(t+1)](images/m-espit1.gif) | The predicted orientation error at time ![](images/t-1.gif). ([MPC.cpp](src/MPC.cpp) line 151) |
 
 ##### *COST TERMS*
 
 | Term              | Description                                                  |
 | ----------------- | ------------------------------------------------------------ |
-| ![](images/J.gif) | The cost function.  The solution's cost function can be found in [MPC.cpp](src/MPC.cpp) lines 80-96. |
+| ![J](images/J.gif) | The cost function.  The solution's cost function can be found in [MPC.cpp](src/MPC.cpp) lines 76-92. |
 
 ##### *CONSTRAINT TERMS*
 
 | Term                  | Description                                                  |
 | --------------------- | ------------------------------------------------------------ |
-| ![](images/delta.gif) | The steering angle constraint. ![](images/-2525.gif)  ([MPC.cpp](src/MPC.cpp) lines 217-220) |
-| ![](images/a.gif)     | The throttle actuator constraint ![](images/1-1.gif) ([MPC.cpp](src/MPC.cpp) lines 225-227) |
+| ![𝛿](images/delta.gif) | The steering angle constraint. ![](images/-2525.gif)  ([MPC.cpp](src/MPC.cpp) lines 213-216) |
+| ![a](images/a.gif)     | The throttle actuator constraint ![](images/1-1.gif) ([MPC.cpp](src/MPC.cpp) lines 220-223) |
 
 
 
@@ -142,9 +144,9 @@ Tuning required adjustments to the prediction time horizon and step parameters, 
 
 The prediction time horizon is set to one second as predictions beyond that would not be reliable or useful.  10 steps at 0.1 seconds each worked well (![](images/m-N.gif) and ![](images/m-dt.gif) -- [MPC.cpp](src/mpc.cpp) lines 9-10).  Additional steps slowed processing speed.
 
-Cost function weights were also tuned ([MPC.cpp](src/mpc.cpp) lines 80-96).  the cross track and orientation error weights are relatively large - 2000.0 each.  With these weights the vehicle can successfully handle track corners, but sways (oscillates).
+Cost function weights were also tuned ([MPC.cpp](src/mpc.cpp) lines 76-92).  the cross track and orientation error weights are relative large (`cte_weight=700.0` and `epsi_weight=500.0`).  With these weights the vehicle can successfully handle track corners, but sways (oscillates).    Higher weights causes the vehicle to steer hard or jerk.
 
-The turns are softened by heavily weighting the cost of changes to throttle and steering angle values.  This helps prevent the vehicle from swaying and allowed it to complete the track successfully.
+The turns are softened by heavily weighting the cost of changes to throttle and steering angle values (`delta_gap_weight = 1000000.0` and `a_gap_weight = 1000.0`) .  This helps prevent the vehicle from swaying and allowed it to complete the track successfully.
 
 
 
@@ -152,7 +154,7 @@ The turns are softened by heavily weighting the cost of changes to throttle and 
 
 To simplify the processing equations, the current vehicle position is subtracted from the reference trajectory points so that the vehicle's position, ![](images/x.gif) and ![](images/y.gif), can be set to zero.  The vehicle orientation ![](images/psi.gif) is also set to zero by shifting the reference trajectory values to the right by 90&deg;.
 
-Latency was introduced by including 100 milliseconds of thread sleep in the `h.onMessage` function ([main.ccp](src/main.cpp) line 226).  The addition of latency required adjustments to the model.   The state values ![](images/statevals.gif) are adjusted in  `h.onMessage` (lines 150-155)  for the latency.   The adjustment code is below.
+Latency was introduced by including 100 milliseconds of thread sleep in the `h.onMessage` function ([main.ccp](src/main.cpp) line 228).  The addition of latency required adjustments to the model.   The state values ![](images/statevals.gif) are adjusted in  `h.onMessage` (lines 152-157)  for the latency.   The latency adjustment code is below.
 
 ```c++
 const double lat_px = 0.0 + v * latency_adjustment_sec;

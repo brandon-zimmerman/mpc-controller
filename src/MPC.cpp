@@ -21,14 +21,6 @@ double dt = 0.1;
 // This is the length from front to CoG that has a similar radius.
 const double Lf = 2.67;
 
-// Both the reference cross track and orientation errors are 0.
-// The reference velocity is set to 40 mph.
-double ref_cte = 0.0;
-double ref_epsi = 0.0;
-double ref_v = 40;
-
-
-
 // The solver takes all the state variables and actuator
 // variables in a singular vector. Thus, we should to establish
 // when one variable starts and another ends to make our lifes easier.
@@ -52,8 +44,11 @@ class FG_eval {
   double a_weight_;
   double delta_gap_weight_;
   double a_gap_weight_;
+  double ref_velocity_;
 
-  FG_eval(Eigen::VectorXd coeffs, double cte_weight, double epsi_weight, double v_weight, double delta_weight, double a_weight, double delta_gap_weight, double a_gap_weight)
+  FG_eval(Eigen::VectorXd coeffs, double cte_weight, double epsi_weight, double v_weight,
+          double delta_weight, double a_weight, double delta_gap_weight, double a_gap_weight,
+          double ref_velocity)
   {
       this->coeffs_ = coeffs;
       this->cte_weight_ = cte_weight;
@@ -63,6 +58,7 @@ class FG_eval {
       this->a_weight_ = a_weight;
       this->delta_gap_weight_ = delta_gap_weight;
       this->a_gap_weight_ = a_gap_weight;
+      this->ref_velocity_ = ref_velocity;
   }
 
   typedef CPPAD_TESTVECTOR(AD<double>) ADvector;
@@ -78,9 +74,9 @@ class FG_eval {
 
     // The part of the cost based on the reference state.
     for (unsigned int t = 0; t < N; t++) {
-      fg[0] += cte_weight_ * CppAD::pow(vars[cte_start + t] - ref_cte, 2);
-      fg[0] += epsi_weight_ * CppAD::pow(vars[epsi_start + t] - ref_epsi, 2);
-      fg[0] += v_weight_ * CppAD::pow(vars[v_start + t] - ref_v, 2);
+      fg[0] += cte_weight_ * CppAD::pow(vars[cte_start + t], 2);
+      fg[0] += epsi_weight_ * CppAD::pow(vars[epsi_start + t], 2);
+      fg[0] += v_weight_ * CppAD::pow(vars[v_start + t] - this->ref_velocity_, 2);
     }
 
     // Minimize the use of actuators.
@@ -134,7 +130,7 @@ class FG_eval {
       AD<double> delta0 = vars[delta_start + t - 1];
       AD<double> a0 = vars[a_start + t - 1];
 
-      AD<double> f0 = coeffs_[0] + coeffs_[1] * x0 + coeffs_[2] * x0 * x0 + coeffs_[3] * x0 * x0 * x0;
+      AD<double> f0 = coeffs_[0] + coeffs_[1] * x0 + coeffs_[2] * CppAD::pow(x0, 2)  + coeffs_[3] * CppAD::pow(x0, 3);
       AD<double> psides0 = CppAD::atan(coeffs_[1] + 2 * coeffs_[2] * x0 + 3 * coeffs_[3] * x0 * x0);
 
       // Here's `x` to get you started.
@@ -168,12 +164,12 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   //size_t i;
   typedef CPPAD_TESTVECTOR(double) Dvector;
 
-  double x = state[0];
-  double y = state[1];
-  double psi = state[2];
-  double v = state[3];
-  double cte = state[4];
-  double epsi = state[5];
+  const double x = state[0];
+  const double y = state[1];
+  const double psi = state[2];
+  const double v = state[3];
+  const double cte = state[4];
+  const double epsi = state[5];
 
   // TODO: Set the number of model variables (includes both states and inputs).
   // For example: If the state is a 4 element vector, the actuators is a 2
@@ -257,6 +253,7 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   constraints_upperbound[cte_start] = cte;
   constraints_upperbound[epsi_start] = epsi;
 
+
   // object that computes objective and constraints
   FG_eval fg_eval(coeffs, this->cte_weight_ ,
                     this->epsi_weight_ ,
@@ -264,7 +261,8 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
                     this->delta_weight_ ,
                     this->a_weight_,
                     this->delta_gap_weight_,
-                    this->a_gap_weight_);
+                    this->a_gap_weight_,
+                    this->ref_velocity_);
 
   //
   // NOTE: You don't have to worry about these options
@@ -317,7 +315,8 @@ vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
   return result;
 }
 
-void MPC::init(double cte_weight, double epsi_weight, double v_weight, double delta_weight, double a_weight, double delta_gap_weight, double a_gap_weight)
+void MPC::init(double cte_weight, double epsi_weight, double v_weight, double delta_weight,
+               double a_weight, double delta_gap_weight, double a_gap_weight, double ref_velocity)
 {
     this->cte_weight_ = cte_weight;
     this->epsi_weight_ = epsi_weight;
@@ -326,5 +325,7 @@ void MPC::init(double cte_weight, double epsi_weight, double v_weight, double de
     this->a_weight_ = a_weight;
     this->delta_gap_weight_ = delta_gap_weight;
     this->a_gap_weight_ = a_gap_weight;
+    this->ref_velocity_ = ref_velocity;
+
 }
 

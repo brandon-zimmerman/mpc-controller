@@ -73,14 +73,15 @@ int main(int argc, char *argv[]) {
   MPC mpc;
 
   // default weights
-  double cte_weight = 2000.0;
-  double epsi_weight = 2000.0;
+  double cte_weight = 700.0;
+  double epsi_weight = 500.0;
   double v_weight = 1.0;
   double delta_weight = 10.0;
   double a_weight = 10.0;
-  double delta_gap_weight = 100000.0;
-  double a_gap_weight = 10000.0;
-  double latency_adjustment_sec = 0.045;
+  double delta_gap_weight = 1000000.0;
+  double a_gap_weight = 1000.0;
+  double latency_adjustment_sec = 0.1;
+  double ref_velocity = 40;
 
 
   if(argc>0 && argv[1] != NULL) cte_weight = atof(argv[1]);
@@ -91,8 +92,9 @@ int main(int argc, char *argv[]) {
   if(argc>5) delta_gap_weight = atof(argv[6]);
   if(argc>6) a_gap_weight = atof(argv[7]);
   if(argc>7) latency_adjustment_sec = atof(argv[8]);
+  if(argc>8) ref_velocity  = atof(argv[9]);
 
-  mpc.init(cte_weight, epsi_weight, v_weight, delta_weight, a_weight, delta_gap_weight, a_gap_weight);
+  mpc.init(cte_weight, epsi_weight, v_weight, delta_weight, a_weight, delta_gap_weight, a_gap_weight, ref_velocity );
 
   h.onMessage([&mpc, &latency_adjustment_sec](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
@@ -169,7 +171,7 @@ int main(int argc, char *argv[]) {
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
           // Otherwise the values will be in between [-deg2rad(25), deg2rad(25] instead of [-1, 1].
-          msgJson["steering_angle"] = -vars[0] / deg2rad(25) * Lf;
+          msgJson["steering_angle"] = -vars[0] / deg2rad(25);
           msgJson["throttle"] = vars[1];
 
           //Display the MPC predicted trajectory 

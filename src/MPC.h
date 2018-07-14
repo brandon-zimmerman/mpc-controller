@@ -15,6 +15,7 @@ class MPC {
  double a_weight_;
  double delta_gap_weight_;
  double a_gap_weight_;
+ double ref_velocity_;
 
  public:
   MPC();
@@ -25,7 +26,9 @@ class MPC {
   // Return the first actuatotions.
   vector<double> Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs);
 
-  void init(double cte_weight, double epsi_weight, double v_weight, double delta_weight, double a_weight, double delta_gap_weight, double a_gap_weight);
+  void init(double cte_weight, double epsi_weight, double v_weight, double delta_weight,
+            double a_weight, double delta_gap_weight, double a_gap_weight,
+            double ref_velocity);
 };
 
 #endif /* MPC_H */
